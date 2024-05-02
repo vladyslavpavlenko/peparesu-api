@@ -37,16 +37,19 @@ func routes(app *config.AppConfig) http.Handler {
 
 			mux.Post("/logout", handlers.Repo.Logout)
 
+			// Restaurant
 			mux.Post("/restaurants/create", handlers.Repo.CreateRestaurant)
-			mux.Post("/restaurants/{restaurant_id}/menus/create", handlers.Repo.CreateMenu)
-			mux.Post("/restaurants/{restaurant_id}/menus/{menu_id}/create", handlers.Repo.CreateMenuItem)
-
 			mux.Put("/restaurants/{restaurant_id}/update", handlers.Repo.UpdateRestaurant)
-			mux.Put("/restaurants/{restaurant_id}/menus/{menu_id}/update", handlers.Repo.UpdateMenu)
-			mux.Put("/restaurants/{restaurant_id}/menus/{menu_id}/{menu_item_id}/update", handlers.Repo.UpdateMenuItem)
-
 			mux.Delete("/restaurants/{restaurant_id}/delete", handlers.Repo.DeleteRestaurant)
+
+			// Menu
+			mux.Post("/restaurants/{restaurant_id}/menus/create", handlers.Repo.CreateMenu)
+			mux.Put("/restaurants/{restaurant_id}/menus/{menu_id}/update", handlers.Repo.UpdateMenu)
 			mux.Delete("/restaurants/{restaurant_id}/menus/{menu_id}/delete", handlers.Repo.DeleteMenu)
+
+			// Menu Item
+			mux.Post("/restaurants/{restaurant_id}/menus/{menu_id}/create", handlers.Repo.CreateMenuItem)
+			mux.Put("/restaurants/{restaurant_id}/menus/{menu_id}/{menu_item_id}/update", handlers.Repo.UpdateMenuItem)
 			mux.Delete("/restaurants/{restaurant_id}/menus/{menu_id}/{menu_item_id}/delete", handlers.Repo.DeleteMenuItem)
 		})
 

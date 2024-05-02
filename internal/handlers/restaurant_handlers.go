@@ -61,6 +61,18 @@ func (m *Repository) CreateRestaurant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var existingRestaurant models.Restaurant
+	result := m.App.DB.Where("LOWER(title) = LOWER(?) AND "+
+		"LOWER(type) = LOWER(?) AND "+
+		"LOWER(description) = LOWER(?) AND "+
+		"LOWER(address) = LOWER(?) AND "+
+		"phone = ?", newRestaurant.Title, newRestaurant.Type,
+		newRestaurant.Description, newRestaurant.Address, newRestaurant.Phone).First(&existingRestaurant)
+	if result.Error == nil {
+		_ = m.errorJSON(w, errors.New("duplicate restaurant entry"), http.StatusConflict)
+		return
+	}
+
 	newRestaurant.OwnerID = ownerID
 
 	if err := m.App.DB.Create(&newRestaurant).Error; err != nil {

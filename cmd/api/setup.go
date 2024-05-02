@@ -6,7 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/vladyslavpavlenko/peparesu/config"
 	"github.com/vladyslavpavlenko/peparesu/internal/handlers"
-	models2 "github.com/vladyslavpavlenko/peparesu/internal/models"
+	"github.com/vladyslavpavlenko/peparesu/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -79,27 +79,27 @@ func connectToPostgresAndMigrate(env *config.EnvVariables) (*gorm.DB, error) {
 
 func runDatabaseMigrations(db *gorm.DB) error {
 	// create tables
-	err := db.AutoMigrate(&models2.UserType{})
+	err := db.AutoMigrate(&models.UserType{})
 	if err != nil {
 		return err
 	}
 
-	err = db.AutoMigrate(&models2.User{})
+	err = db.AutoMigrate(&models.User{})
 	if err != nil {
 		return err
 	}
 
-	err = db.AutoMigrate(&models2.Restaurant{})
+	err = db.AutoMigrate(&models.Restaurant{})
 	if err != nil {
 		return err
 	}
 
-	err = db.AutoMigrate(&models2.Menu{})
+	err = db.AutoMigrate(&models.Menu{})
 	if err != nil {
 		return err
 	}
 
-	err = db.AutoMigrate(&models2.MenuItem{})
+	err = db.AutoMigrate(&models.MenuItem{})
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func runDatabaseMigrations(db *gorm.DB) error {
 func createInitialUserTypes(db *gorm.DB) error {
 	var count int64
 
-	if err := db.Model(&models2.UserType{}).Count(&count).Error; err != nil {
+	if err := db.Model(&models.UserType{}).Count(&count).Error; err != nil {
 		return err
 	}
 
@@ -145,7 +145,7 @@ func createInitialUserTypes(db *gorm.DB) error {
 		return nil
 	}
 
-	initialData := []models2.UserType{
+	initialData := []models.UserType{
 		{Title: "User"},
 		{Title: "Admin"},
 	}
@@ -161,7 +161,7 @@ func createInitialUserTypes(db *gorm.DB) error {
 func createInitialUsers(db *gorm.DB) error {
 	var count int64
 
-	if err := db.Model(&models2.User{}).Count(&count).Error; err != nil {
+	if err := db.Model(&models.User{}).Count(&count).Error; err != nil {
 		return err
 	}
 
@@ -169,7 +169,7 @@ func createInitialUsers(db *gorm.DB) error {
 		return nil
 	}
 
-	initialData := []models2.User{
+	initialData := []models.User{
 		{
 			FirstName:  "Владислав",
 			LastName:   "Павленко",
@@ -210,7 +210,7 @@ func createInitialUsers(db *gorm.DB) error {
 func createInitialRestaurants(db *gorm.DB) error {
 	var count int64
 
-	if err := db.Model(&models2.Restaurant{}).Count(&count).Error; err != nil {
+	if err := db.Model(&models.Restaurant{}).Count(&count).Error; err != nil {
 		return err
 	}
 
@@ -218,7 +218,7 @@ func createInitialRestaurants(db *gorm.DB) error {
 		return nil
 	}
 
-	initialData := []models2.Restaurant{
+	initialData := []models.Restaurant{
 		{
 			OwnerID:     1,
 			Title:       "Молодість",
@@ -255,7 +255,7 @@ func createInitialRestaurants(db *gorm.DB) error {
 func createInitialMenus(db *gorm.DB) error {
 	var count int64
 
-	if err := db.Model(&models2.Menu{}).Count(&count).Error; err != nil {
+	if err := db.Model(&models.Menu{}).Count(&count).Error; err != nil {
 		return err
 	}
 
@@ -263,7 +263,7 @@ func createInitialMenus(db *gorm.DB) error {
 		return nil
 	}
 
-	initialData := []models2.Menu{
+	initialData := []models.Menu{
 		{
 			RestaurantID: 1,
 			Title:        "Сети закусок",
@@ -313,7 +313,7 @@ func createInitialMenus(db *gorm.DB) error {
 func createInitialMenuItems(db *gorm.DB) error {
 	var count int64
 
-	if err := db.Model(&models2.MenuItem{}).Count(&count).Error; err != nil {
+	if err := db.Model(&models.MenuItem{}).Count(&count).Error; err != nil {
 		return err
 	}
 
@@ -321,7 +321,7 @@ func createInitialMenuItems(db *gorm.DB) error {
 		return nil
 	}
 
-	initialData := []models2.MenuItem{
+	initialData := []models.MenuItem{
 		{
 			MenuID:      1,
 			Title:       "Сет Бутербродний",

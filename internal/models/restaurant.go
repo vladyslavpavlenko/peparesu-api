@@ -10,5 +10,5 @@ type Restaurant struct {
 	Description string `gorm:"size:1000;"`
 	Address     string `gorm:"size:255;"`
 	Phone       string `gorm:"size:255;"`
-	Menus       []Menu `gorm:"constraint:OnDelete:CASCADE;"`
+	Menus       []Menu `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 }

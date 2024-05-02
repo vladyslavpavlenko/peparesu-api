@@ -13,5 +13,5 @@ type User struct {
 	UserType    UserType `json:"-"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	Restaurants []Restaurant `gorm:"constraint:OnDelete:CASCADE;"`
+	Restaurants []Restaurant `gorm:"foreignKey:OwnerID;constraint:OnDelete:CASCADE;" json:"-"`
 }

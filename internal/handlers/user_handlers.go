@@ -90,7 +90,7 @@ func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 	m.App.DB.First(&user, "email = ?", body.Email)
 
 	if user.ID == 0 {
-		_ = m.errorJSON(w, errors.New("invalid email"), http.StatusUnauthorized)
+		_ = m.errorJSON(w, errors.New("user not found"), http.StatusUnauthorized)
 		return
 	}
 
