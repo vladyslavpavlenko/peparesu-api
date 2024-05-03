@@ -10,8 +10,23 @@ import (
 )
 
 func (m *Repository) GetRestaurants(w http.ResponseWriter, r *http.Request) {
+	urlQuery := r.URL.Query()
+	ownerID := urlQuery.Get("owner_id")
+
 	var restaurants []models.Restaurant
-	err := m.App.DB.Find(&restaurants).Error
+	query := m.App.DB
+
+	if ownerID != "" {
+		id, err := strconv.Atoi(ownerID)
+		if err != nil {
+			_ = m.errorJSON(w, errors.New("invalid owner ID"), http.StatusNotFound)
+			return
+		}
+
+		query = query.Where("owner_id = ?", id)
+	}
+
+	err := query.Find(&restaurants).Error
 	if err != nil {
 		_ = m.errorJSON(w, err, http.StatusNotFound)
 		return

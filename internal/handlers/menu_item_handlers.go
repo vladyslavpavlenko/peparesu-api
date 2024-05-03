@@ -187,7 +187,7 @@ func (m *Repository) UpdateMenuItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var existingMenuItem models.MenuItem
-	if err := m.App.DB.First(&existingMenu, "id = ?", menuItemID).Error; err != nil {
+	if err := m.App.DB.First(&existingMenuItem, "id = ?", menuItemID).Error; err != nil {
 		_ = m.errorJSON(w, errors.New("menu item not found"), http.StatusNotFound)
 		return
 	}

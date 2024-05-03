@@ -8,5 +8,5 @@ type MenuItem struct {
 	Title       string `gorm:"size:255;not null"`
 	Description string `gorm:"size:1000"`
 	LikesCount  uint
-	PriceUAH    uint
+	PriceUAH    uint `json:"price_uah"`
 }

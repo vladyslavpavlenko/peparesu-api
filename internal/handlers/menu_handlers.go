@@ -94,6 +94,12 @@ func (m *Repository) CreateMenu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var existingMenu models.Menu
+	if err := m.App.DB.Where("title = ? AND restaurant_id = ?", newMenu.Title, restaurantID).First(&existingMenu).Error; err == nil {
+		_ = m.errorJSON(w, errors.New("a menu with this title already exists for this restaurant"), http.StatusConflict)
+		return
+	}
+
 	newMenu.RestaurantID = uint(restaurantID)
 
 	if err := m.App.DB.Create(&newMenu).Error; err != nil {
