@@ -26,7 +26,7 @@ func (m *Repository) GetRestaurants(w http.ResponseWriter, r *http.Request) {
 		query = query.Where("owner_id = ?", id)
 	}
 
-	err := query.Find(&restaurants).Error
+	err := query.Preload("Owner").Find(&restaurants).Error
 	if err != nil {
 		_ = m.errorJSON(w, err, http.StatusNotFound)
 		return
@@ -48,7 +48,7 @@ func (m *Repository) GetRestaurant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var restaurant models.Restaurant
-	err = m.App.DB.Where("id = ?", restaurantID).First(&restaurant).Error
+	err = m.App.DB.Preload("Owner").Where("id = ?", restaurantID).First(&restaurant).Error
 	if err != nil {
 		_ = m.errorJSON(w, err, http.StatusNotFound)
 		return

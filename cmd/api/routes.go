@@ -62,7 +62,13 @@ func routes(app *config.AppConfig) http.Handler {
 		mux.Get("/restaurants/{restaurant_id}/menus/{menu_id}", handlers.Repo.GetMenu)
 		mux.Get("/restaurants/{restaurant_id}/menus/{menu_id}/{menu_item_id}", handlers.Repo.GetMenuItem)
 		mux.Put("/restaurants/{restaurant_id}/menus/{menu_id}/{menu_item_id}/{action}", handlers.Repo.LikeMenuItem)
+
+		// Storage
+		mux.Get("/storage/images/*", handlers.Repo.GetImage)
 	})
+
+	mux.Get("/restaurants", handlers.Repo.Restaurants)
+	mux.Get("/restaurants/{restaurant_id}", handlers.Repo.Restaurant)
 
 	return mux
 }

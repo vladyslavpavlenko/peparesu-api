@@ -31,41 +31,6 @@ func (m *Repository) GetMenus(w http.ResponseWriter, r *http.Request) {
 	_ = m.writeJSON(w, http.StatusOK, payload)
 }
 
-func (m *Repository) GetMenu(w http.ResponseWriter, r *http.Request) {
-	restaurantID, err := strconv.Atoi(chi.URLParam(r, "restaurant_id"))
-	if err != nil {
-		_ = m.errorJSON(w, errors.New("invalid restaurant id"))
-		return
-	}
-
-	menuID, err := strconv.Atoi(chi.URLParam(r, "menu_id"))
-	if err != nil {
-		_ = m.errorJSON(w, errors.New("invalid menu id"))
-		return
-	}
-
-	var menu models.Menu
-	err = m.App.DB.Where("restaurant_id = ? AND id = ?", restaurantID, menuID).First(&menu).Error
-	if err != nil {
-		_ = m.errorJSON(w, err, http.StatusNotFound)
-		return
-	}
-
-	var menuItems []models.MenuItem
-	err = m.App.DB.Where("menu_id = ?", menu.ID).Find(&menuItems).Error
-	if err != nil {
-		_ = m.errorJSON(w, err, http.StatusNotFound)
-		return
-	}
-
-	payload := jsonResponse{
-		Error: false,
-		Data:  menuItems,
-	}
-
-	_ = m.writeJSON(w, http.StatusOK, payload)
-}
-
 func (m *Repository) CreateMenu(w http.ResponseWriter, r *http.Request) {
 	userID, err := m.getUserFromToken(r)
 	if err != nil {

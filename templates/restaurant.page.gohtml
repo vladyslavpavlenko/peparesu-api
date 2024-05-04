@@ -1,0 +1,173 @@
+{{template "base" .}}
+
+{{define "content"}}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="mt-5">
+                    <a href="/restaurants" class="link-secondary text-body-tertiary link-offset-1 link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-100-hover">повернутися до списку закладів</a>
+                    <h1 id="restaurantTitle" class="mt-3 text-start">🍽 завантаження...</h1>
+                    <p id="restaurantType" class="text-body-tertiary">завантаження...</p>
+                    <br>
+                    <div id="descriptionSection">
+                        <strong>💬 опис</strong>
+                        <p id="restaurantDescription">завантаження...</p>
+                    </div>
+                </div>
+
+                <br>
+                <div>
+                    <strong>📋 меню</strong>
+                    <div class="accordion mt-2" id="menuAccordion">
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <div id="addressSection">
+                        <strong>📍 адреса</strong>
+                        <p id="restaurantAddress">завантаження...</p>
+                    </div>
+
+                    <div id="phoneSection">
+                        <strong>📞 телефон</strong>
+                        <p id="restaurantPhone">завантаження...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+
+{{define "js"}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const restaurantId = window.location.pathname.split('/')[2];
+            const menuApiUrl = `http://localhost:8080/api/v1/restaurants/${restaurantId}/menus`;
+
+            function initializeLikes() {
+                document.querySelectorAll('.like-button').forEach(button => {
+                    const menuItemId = button.dataset.itemid;
+                    const liked = localStorage.getItem(`liked_${menuItemId}`);
+                    if (liked) {
+                        button.innerHTML = '❤️';
+                        button.onclick = () => likeItem(restaurantId, button.dataset.menuid, menuItemId, 'unlike');
+                    } else {
+                        button.innerHTML = '🤍';
+                        button.onclick = () => likeItem(restaurantId, button.dataset.menuid, menuItemId, 'like');
+                    }
+                });
+            }
+
+            // Fetch Menus for the restaurant
+            fetch(menuApiUrl)
+                .then(response => response.json())
+                .then(json => {
+                    if (!json.error && json.data) {
+                        const menuAccordion = document.querySelector('#menuAccordion');
+                        json.data.forEach((menu, index) => {
+                            const menuCard = document.createElement('div');
+                            menuCard.classList = 'accordion-item';
+                            menuCard.innerHTML = `
+                    <h2 class="accordion-header" id="heading${index}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="true" aria-controls="collapse${index}">
+                            ${menu.Title}
+                        </button>
+                    </h2>
+                    <div id="collapse${index}" class="accordion-collapse collapse" aria-labelledby="heading${index}">
+                        <div class="accordion-body" id="menuItems${menu.ID}">
+                            <!-- menu items will be loaded here -->
+                        </div>
+                    </div>
+                `;
+                            menuAccordion.appendChild(menuCard);
+
+                            fetch(`http://localhost:8080/api/v1/restaurants/${restaurantId}/menus/${menu.ID}`)
+                                .then(res => res.json())
+                                .then(itemJson => {
+                                    if (!itemJson.error && itemJson.data) {
+                                        const itemsContainer = document.querySelector(`#menuItems${menu.ID}`);
+                                        itemJson.data.forEach(item => {
+                                            const itemCard = document.createElement('div');
+                                            itemCard.className = 'mb-3';
+                                            itemCard.innerHTML = `
+                                                <div class="card" style="flex-direction: row;">
+                                                    <div class="img-container" style="flex: 0 0 auto; width: 250px; height: 180px; margin: 10px; overflow: hidden;">
+                                                        <img src="${item.Picture}" class="rounded-2" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <h5 class="card-title"><strong>${item.Title}</strong></h5>
+                                                        <p class="card-text">${item.Description}</p>
+                                                        <p class="card-text"><strong>${item.PriceUAH} грн</strong></p>
+                                                        <button class="btn btn-light like-button" data-itemid="${item.ID}" data-menuid="${menu.ID}">Like</button>
+                                                        <span id="likeCount${item.ID}" class="ps-2">${item.LikesCount}</span>
+                                                    </div>
+                                                </div>
+                                               `;
+                                            itemsContainer.appendChild(itemCard);
+                                        });
+                                        initializeLikes();
+                                    }
+                                });
+                        });
+                    } else {
+                        console.error('No data or error in response');
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+
+            // Fetch Restaurant details to set the page content
+            const restaurantApiUrl = `http://localhost:8080/api/v1/restaurants/${restaurantId}`;
+            fetch(restaurantApiUrl)
+                .then(response => response.json())
+                .then(json => {
+                    if (!json.error && json.data) {
+                        document.getElementById('restaurantTitle').textContent = `🍽 ${json.data.Title}`;
+                        document.getElementById('restaurantType').textContent = json.data.Type;
+                        if (json.data.Description) {
+                            document.getElementById('restaurantDescription').textContent = json.data.Description;
+                        } else {
+                            document.getElementById('descriptionSection').style.display = 'none';
+                        }
+                        if (json.data.Address) {
+                            document.getElementById('restaurantAddress').textContent = json.data.Address;
+                        } else {
+                            document.getElementById('emailSection').style.display = 'none';
+                        }
+                        if (json.data.Phone) {
+                            document.getElementById('restaurantPhone').textContent = json.data.Phone;
+                        } else {
+                            document.getElementById('phoneSection').style.display = 'none';
+                        }
+                    } else {
+                        console.error('Error fetching restaurant details:', json);
+                    }
+                })
+                .catch(error => console.error('Error fetching restaurant details:', error));
+
+            function likeItem(restaurantId, menuId, menuItemId, action) {
+                const url = `http://localhost:8080/api/v1/restaurants/${restaurantId}/menus/${menuId}/${menuItemId}/${action}`;
+                fetch(url, { method: 'PUT' })
+                    .then(response => response.json())
+                    .then(json => {
+                        if (!json.error) {
+                            document.getElementById(`likeCount${menuItemId}`).textContent = json.data.LikesCount;
+                            const button = document.querySelector(`button[data-itemid="${menuItemId}"]`);
+                            if (action === 'like') {
+                                localStorage.setItem(`liked_${menuItemId}`, 'true');
+                                button.innerHTML = '❤️';
+                                button.onclick = () => likeItem(restaurantId, menuId, menuItemId, 'unlike');
+                            } else {
+                                localStorage.removeItem(`liked_${menuItemId}`);
+                                button.innerHTML = '🤍';
+                                button.onclick = () => likeItem(restaurantId, menuId, menuItemId, 'like');
+                            }
+                        } else {
+                            console.error('Error processing like:', json);
+                        }
+                    })
+                    .catch(error => console.error('Error sending like:', error));
+            }
+        });
+    </script>
+{{end}}

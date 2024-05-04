@@ -7,6 +7,7 @@ import (
 	"github.com/vladyslavpavlenko/peparesu/config"
 	"github.com/vladyslavpavlenko/peparesu/internal/handlers"
 	"github.com/vladyslavpavlenko/peparesu/internal/models"
+	"github.com/vladyslavpavlenko/peparesu/internal/render"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -39,6 +40,7 @@ func setup(app *config.AppConfig) error {
 
 	repo := handlers.NewRepo(app)
 	handlers.NewHandlers(repo)
+	render.NewRenderer(app)
 
 	return nil
 }
@@ -324,130 +326,155 @@ func createInitialMenuItems(db *gorm.DB) error {
 	initialData := []models.MenuItem{
 		{
 			MenuID:      1,
+			Picture:     "https://www.scythia.vn.ua/wp-content/uploads/2021/12/IMG_0919-2.jpg",
 			Title:       "Сет Бутербродний",
-			Description: "Найсмачніші бутери:\n•\tЗ сирокопченою ковбасою та вершковим маслом\n•\tЗ лимонним маслом і червоною ікрою\n•\tЗ вершковим маслом і слабосолоним лососем\n•\tЗі шпротами, вешковим маслорм та слайсами свіжого огірка\n•\tЗ Генеральським салом. Подаються на скибках бородинського хліба з хріном і маринованим огірком \n•\tЗ тюлькою, вершковим маслом, червоною маринованою та зеленою цибулею.",
+			Description: "Найсмачніші бутери: з сирокопченою ковбасою та вершковим маслом, з лимонним маслом і червоною ікрою.",
 			PriceUAH:    910,
 		},
 		{
 			MenuID:      1,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/mwPKHII-CxChCuC-sHSGnny.jpeg.webp",
 			Title:       "Сет із намазками",
 			Description: "Паштет, зелене сало, еврейська намазка, ікра з баклажанів, форшмак, лечо з перців.",
 			PriceUAH:    320,
 		},
 		{
 			MenuID:      2,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/cSNKvUJ-sDxhZqT-ciFHWWr.webp",
 			Title:       "Сирна картошка",
-			Description: "Картоплю смажимо на суміші топленого жиру зі спеціями. Подаємо з насиченим сирним соусом та міксом трьох видів сиру: Чеддер, Сулугуні, Моцарелла.",
+			Description: "Картоплю смажимо на суміші топленого жиру зі спеціями. Подаємо з насиченим сирним соусом та міксом трьох видів сиру.",
 			PriceUAH:    285,
 		},
 		{
 			MenuID:      2,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/xGHFnjq-OxHhgwE-wZUtVZv.webp",
 			Title:       "Картошка з мортаделою та яйцем",
-			Description: "Картоплю смажимо на суміші топленого жиру зі спеціями. Подаємо з насиченим сирним соусом, мортаделою обсмаженою на грилі та окатою яєчнею.",
+			Description: "Картоплю смажимо на суміші топленого жиру зі спеціями. Подаємо з насиченим сирним соусом, мортаделою обсмаженою.",
 			PriceUAH:    300,
 		},
 		{
 			MenuID:      2,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/xNmYCYk-GttRgHQ-ckoZGNC.webp",
 			Title:       "Смажена картопля зі шкварками",
 			Description: "Картоплю смажимо на суміші топленого жиру зі спеціями. Подаємо зі шкварочками та зеленню.",
 			PriceUAH:    320,
 		},
 		{
 			MenuID:      3,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/CgEMnWx-bIDPIUX-DjOaGyo.jpeg.webp",
 			Title:       "Пельмені на всю стипендію",
 			Description: "З куркою.",
 			PriceUAH:    170,
 		},
 		{
 			MenuID:      3,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/CgEMnWx-bIDPIUX-DjOaGyo.jpeg.webp",
 			Title:       "Пельмені на всю стипендію",
 			Description: "Зі свининою.",
 			PriceUAH:    175,
 		},
 		{
 			MenuID:      3,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/fGHLXng-UACmFmP-VCvefkd.jpeg.webp",
 			Title:       "Пельмені смажені",
 			Description: "Подаємо з вершково-грибним соусом та сиром моцарелла.",
 			PriceUAH:    235,
 		},
 		{
 			MenuID:      4,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/ZtpkXlH-vmkUwcF-FZGeQLl.webp",
 			Title:       "Піна Колада",
-			Description: "- CAPTAIN MORGAN TIKI \n- CAPTAIN MORGAN WHITE\n- PINEAPPLE JUICE\n- SOUR-CREAM",
+			Description: "CAPTAIN MORGAN TIKI, CAPTAIN MORGAN WHITE, PINEAPPLE JUICE, SOUR-CREAM",
 			PriceUAH:    220,
 		},
 		{
 			MenuID:      4,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-molodist/menu/CwabAgL-RMkVzke-pNWNQjo.webp",
 			Title:       "Big Lebowski",
 			Description: "Сoffee liqueur, Vodka Koskenkorva, sour cream",
 			PriceUAH:    220,
 		},
 		{
-			MenuID:   5,
-			Title:    "нігірі з лососем і домашнім унагі",
-			PriceUAH: 115,
+			MenuID:      5,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-japanhi-privet-delivery/menu/GsQBadX-zxIpnee-LubUKXH.jpeg.webp",
+			Title:       "нігірі з лососем і домашнім унагі",
+			Description: "з цибулею шніт, томатним айолі та кунжутом юзу\n",
+			PriceUAH:    115,
 		},
 		{
-			MenuID:   5,
-			Title:    "нігірі з броколі і томатним айолі",
-			PriceUAH: 25,
+			MenuID:      5,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-japanhi-privet-delivery/menu/TUseGDG-DkVPTre-KddHHmC.jpeg.webp",
+			Title:       "нігірі з гребінцем",
+			Description: "з соусом місо",
+			PriceUAH:    210,
 		},
 		{
-			MenuID:   5,
-			Title:    "нігірі з лангустином і сальсою манго",
-			PriceUAH: 120,
+			MenuID:      5,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-japanhi-privet-delivery/menu/KHCXibN-GMUtxzV-MQwzlPD.jpeg.webp",
+			Title:       "нігірі з лангустином і сальсою манго",
+			Description: "з соусом вінегрет юзу",
+			PriceUAH:    120,
 		},
 		{
-			MenuID:   5,
-			Title:    "нігірі з тунцем",
-			PriceUAH: 115,
+			MenuID:      5,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-japanhi-privet-delivery/menu/NOHzvNq-vCjzsJV-VACAfGX.jpeg.webp",
+			Title:       "нігірі з тунцем",
+			Description: "з цибулею шніт, кунжутом кімчі та домашнім унагі",
+			PriceUAH:    115,
 		},
 		{
 			MenuID:      6,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-japanhi-privet-delivery/menu/XtCiBbv-RFHuGYb-NRvnFGn.jpeg.webp",
 			Title:       "сет 1",
-			Description: "рол з лососем або вугром, філадельфією, огірком і унагі\nфутомакі з тунцем, лососем, шиітаке, огірком і соусом джпн хай\n2 нігірі з масляною і пюре дайкон-юзу\n2 нігірі з лангустином і сальсою манго\nедамаме з мальдонскою сіллю.",
+			Description: "рол з лососем або вугром, філадельфією, огірком і унагі, футомакі з тунцем, лососем, шиітаке, огірком і соусом джпн хай.",
 			PriceUAH:    1360,
 		},
 		{
 			MenuID:      6,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-japanhi-privet-delivery/menu/UIhHFpx-KfLIHJz-ViTnDMu.jpeg.webp",
 			Title:       "сет 2",
-			Description: "рол з лососем або вугром, філадельфією, огірком і унагі\nрол з лангустином, лососем татакі, філадельфією, кисло-солодким соусом і трюфельним айолі\nрол з крабом, вугром, авокадо, філадельфією і домашнім унагі\n3 нігірі з тунцем\nедамаме з мальдонсою сіллю.",
+			Description: "рол з лососем або вугром, філадельфією, огірком і унагі, рол з лангустином, лососем татакі, філадельфією, кисло-солодким соусом і трюфельним айолі.",
 			PriceUAH:    1840,
 		},
 		{
 			MenuID:      7,
+			Picture:     "http://localhost:8080/api/v1/storage/images/menuitem-default.jpeg",
 			Title:       "сенча",
 			Description: "Чай з м'яким свіжим ароматом та солодким присмаком. Чудово тамує спрагу і наповнює енергією.",
 			PriceUAH:    190,
 		},
 		{
 			MenuID:   7,
+			Picture:  "http://localhost:8080/api/v1/storage/images/menuitem-default.jpeg",
 			Title:    "кабусеча генмайча",
 			PriceUAH: 170,
 		},
 		{
 			MenuID:      8,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-thailandhi/menu/RjXrcjv-EtdAzby-CkwIYBT.jpeg.webp",
 			Title:       "Спарвжній Том Ям",
 			Description: "кисло-гострий суп з креветками, кальмарами, лемонграсом, галангалом, соком лайма, зеленню та грибами ерінгами",
 			PriceUAH:    380,
 		},
 		{
 			MenuID:      8,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-thailandhi/menu/wIfWSja-KIHPZCf-lGRDqII.jpeg.webp",
 			Title:       "Туристичний Том Ям",
 			Description: "кисло-гострий суп з кокосовим молоком, креветками, кальмарами, лемонграсом, галангалом, соком лайма, зеленню та ерінгами",
 			PriceUAH:    440,
 		},
 		{
 			MenuID:      9,
+			Picture:     "https://cdn-media.choiceqr.com/prod-eat-thailandhi/menu/gbSBllF-elDedEb-wseYgcv.jpeg.webp",
 			Title:       "Ча Єн",
 			Description: "чорний цейлонський чай з букетом східних спецій і згущеним молоком",
 			PriceUAH:    110,
 		},
 		{
-			MenuID:      9,
-			Title:       "Бабл Ті",
-			Description: "зелений чай, кокосове молоко, сироп пандану та баблз",
-			PriceUAH:    180,
+			MenuID:   9,
+			Picture:  "https://cdn-media.choiceqr.com/prod-eat-thailandhi/menu/jYCfmUl-bHMvVNY-DbjEckS.jpeg.webp",
+			Title:    "Манго-маракуя-матча",
+			PriceUAH: 150,
 		},
 	}
 

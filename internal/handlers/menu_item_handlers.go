@@ -1,13 +1,51 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi"
 	"github.com/vladyslavpavlenko/peparesu/internal/models"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 )
+
+func (m *Repository) GetMenu(w http.ResponseWriter, r *http.Request) {
+	restaurantID, err := strconv.Atoi(chi.URLParam(r, "restaurant_id"))
+	if err != nil {
+		_ = m.errorJSON(w, errors.New("invalid restaurant id"))
+		return
+	}
+
+	menuID, err := strconv.Atoi(chi.URLParam(r, "menu_id"))
+	if err != nil {
+		_ = m.errorJSON(w, errors.New("invalid menu id"))
+		return
+	}
+
+	var menu models.Menu
+	err = m.App.DB.Where("restaurant_id = ? AND id = ?", restaurantID, menuID).First(&menu).Error
+	if err != nil {
+		_ = m.errorJSON(w, err, http.StatusNotFound)
+		return
+	}
+
+	var menuItems []models.MenuItem
+	err = m.App.DB.Where("menu_id = ?", menu.ID).Find(&menuItems).Error
+	if err != nil {
+		_ = m.errorJSON(w, err, http.StatusNotFound)
+		return
+	}
+
+	payload := jsonResponse{
+		Error: false,
+		Data:  menuItems,
+	}
+
+	_ = m.writeJSON(w, http.StatusOK, payload)
+}
 
 func (m *Repository) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 	restaurantID, err := strconv.Atoi(chi.URLParam(r, "restaurant_id"))
@@ -97,6 +135,11 @@ func (m *Repository) LikeMenuItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10 MB limit
+		_ = m.errorJSON(w, errors.New("error parsing form"), http.StatusBadRequest)
+		return
+	}
+
 	userID, err := m.getUserFromToken(r)
 	if err != nil {
 		_ = m.errorJSON(w, err, http.StatusUnauthorized)
@@ -127,15 +170,42 @@ func (m *Repository) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var newMenuItem models.MenuItem
-	err = json.NewDecoder(r.Body).Decode(&newMenuItem)
-	if err != nil {
-		_ = m.errorJSON(w, errors.New("error decoding menu item data"), http.StatusBadRequest)
+	newMenuItem.Title = r.FormValue("title")
+	newMenuItem.Description = r.FormValue("description")
+	newMenuItem.MenuID = uint(menuID)
+	newMenuItem.Picture = "http://localhost:8080/api/v1/storage/images/menuitem-default.jpeg"
+
+	priceUAH, _ := strconv.ParseInt(r.FormValue("price_uah"), 10, 64)
+	newMenuItem.PriceUAH = uint(priceUAH)
+
+	if err := m.App.DB.Create(&newMenuItem).Error; err != nil {
+		_ = m.errorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	newMenuItem.MenuID = uint(menuID)
+	file, _, err := r.FormFile("picture")
+	if err != nil {
+		_ = m.errorJSON(w, errors.New("error retrieving the file"), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
 
-	if err := m.App.DB.Create(&newMenuItem).Error; err != nil {
+	filePath := filepath.Join("storage/images", fmt.Sprintf("menuitem-%d.jpeg", newMenuItem.ID))
+	dst, err := os.Create(filePath)
+	if err != nil {
+		_ = m.errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	if _, err = io.Copy(dst, file); err != nil {
+		_ = m.errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	newMenuItem.Picture = fmt.Sprintf("http://localhost:8080/api/v1/%s", filePath)
+
+	if err := m.App.DB.Save(&newMenuItem).Error; err != nil {
 		_ = m.errorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
@@ -148,6 +218,11 @@ func (m *Repository) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) UpdateMenuItem(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10 MB
+		_ = m.errorJSON(w, errors.New("error parsing form"), http.StatusBadRequest)
+		return
+	}
+
 	userID, err := m.getUserFromToken(r)
 	if err != nil {
 		_ = m.errorJSON(w, err, http.StatusUnauthorized)
@@ -156,19 +231,13 @@ func (m *Repository) UpdateMenuItem(w http.ResponseWriter, r *http.Request) {
 
 	restaurantID, err := strconv.Atoi(chi.URLParam(r, "restaurant_id"))
 	if err != nil {
-		_ = m.errorJSON(w, errors.New("invalid restaurant ID"))
-		return
-	}
-
-	menuID, err := strconv.Atoi(chi.URLParam(r, "menu_id"))
-	if err != nil {
-		_ = m.errorJSON(w, errors.New("invalid menu ID"))
+		_ = m.errorJSON(w, errors.New("invalid restaurant ID"), http.StatusBadRequest)
 		return
 	}
 
 	menuItemID, err := strconv.Atoi(chi.URLParam(r, "menu_item_id"))
 	if err != nil {
-		_ = m.errorJSON(w, errors.New("invalid menu item ID"))
+		_ = m.errorJSON(w, errors.New("invalid menu item ID"), http.StatusBadRequest)
 		return
 	}
 
@@ -180,21 +249,38 @@ func (m *Repository) UpdateMenuItem(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var existingMenu models.Menu
-	if err := m.App.DB.First(&existingMenu, "id = ?", menuID).Error; err != nil {
-		_ = m.errorJSON(w, errors.New("menu not found"), http.StatusNotFound)
-		return
-	}
-
 	var existingMenuItem models.MenuItem
 	if err := m.App.DB.First(&existingMenuItem, "id = ?", menuItemID).Error; err != nil {
 		_ = m.errorJSON(w, errors.New("menu item not found"), http.StatusNotFound)
 		return
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&existingMenuItem)
-	if err != nil {
-		_ = m.errorJSON(w, errors.New("error decoding menu data"), http.StatusBadRequest)
+	existingMenuItem.Title = r.FormValue("title")
+	existingMenuItem.Description = r.FormValue("description")
+
+	priceUAH, _ := strconv.ParseInt(r.FormValue("price_uah"), 10, 64)
+	existingMenuItem.PriceUAH = uint(priceUAH)
+
+	file, _, err := r.FormFile("picture")
+	if err == nil {
+		defer file.Close()
+
+		filePath := filepath.Join("storage/images", fmt.Sprintf("menuitem-%d.jpeg", menuItemID))
+		dst, err := os.Create(filePath)
+		if err != nil {
+			_ = m.errorJSON(w, err, http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+
+		if _, err = io.Copy(dst, file); err != nil {
+			_ = m.errorJSON(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		existingMenuItem.Picture = fmt.Sprintf("http://localhost:8080/api/v1/%s", filePath)
+	} else if !errors.Is(err, http.ErrMissingFile) {
+		_ = m.errorJSON(w, errors.New("error processing uploaded file"), http.StatusBadRequest)
 		return
 	}
 
@@ -203,11 +289,10 @@ func (m *Repository) UpdateMenuItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload := jsonResponse{
+	_ = m.writeJSON(w, http.StatusOK, jsonResponse{
 		Error: false,
 		Data:  existingMenuItem,
-	}
-	_ = m.writeJSON(w, http.StatusOK, payload)
+	})
 }
 
 func (m *Repository) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {

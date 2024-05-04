@@ -1,11 +1,16 @@
 package config
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"html/template"
+)
 
 // AppConfig holds the application config.
 type AppConfig struct {
-	DB  *gorm.DB
-	Env *EnvVariables
+	DB            *gorm.DB
+	Env           *EnvVariables
+	UseCache      bool
+	TemplateCache map[string]*template.Template
 }
 
 // EnvVariables holds environment variables used in the application.
