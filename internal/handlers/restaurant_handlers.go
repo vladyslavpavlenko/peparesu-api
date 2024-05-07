@@ -26,7 +26,7 @@ func (m *Repository) GetRestaurants(w http.ResponseWriter, r *http.Request) {
 		query = query.Where("owner_id = ?", id)
 	}
 
-	err := query.Preload("Owner").Find(&restaurants).Error
+	err := query.Find(&restaurants).Error
 	if err != nil {
 		_ = m.errorJSON(w, err, http.StatusNotFound)
 		return
@@ -48,7 +48,7 @@ func (m *Repository) GetRestaurant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var restaurant models.Restaurant
-	err = m.App.DB.Preload("Owner").Where("id = ?", restaurantID).First(&restaurant).Error
+	err = m.App.DB.Where("id = ?", restaurantID).First(&restaurant).Error
 	if err != nil {
 		_ = m.errorJSON(w, err, http.StatusNotFound)
 		return
@@ -73,6 +73,11 @@ func (m *Repository) CreateRestaurant(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&newRestaurant)
 	if err != nil {
 		_ = m.errorJSON(w, errors.New("error decoding restaurant data"), http.StatusBadRequest)
+		return
+	}
+
+	if newRestaurant.Title == "" {
+		_ = m.errorJSON(w, errors.New("title cannot be empty"), http.StatusBadRequest)
 		return
 	}
 
